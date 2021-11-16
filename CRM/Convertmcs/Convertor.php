@@ -159,18 +159,18 @@ class CRM_Convertmcs_Convertor {
   private function assertMembershipStatus($contactId, $employerId, $membershipStatus, $mcType) {
     if ($mcType != 'MX' && empty($employerId)) {
       $contactURL = $this->getContactURL($contactId);
-      throw new Exception("Contact $contactURL heeft geen werkgever");
+      throw new Exception("Contact $contactURL ($mcType) heeft geen werkgever");
     }
 
     if ($mcType == 'MX' && empty($employerId)) {
       $contactURL = $this->getContactURL($contactId);
-      throw new Exception("Contact $contactURL heeft geen (ex)werkgever met een lidmaatschap");
+      throw new Exception("Contact $contactURL ($mcType) heeft geen (ex)werkgever met een lidmaatschap");
     }
 
     if ($membershipStatus == self::NO_MEMBERSHIP) {
       $contactURL = $this->getContactURL($contactId);
       $employerURL = $this->getContactURL($employerId);
-      throw new Exception("Contact $contactURL met werkgever $employerURL heeft geen lidmaatschap");
+      throw new Exception("Contact $contactURL ($mcType) met werkgever $employerURL heeft geen lidmaatschap");
     }
 
     if ($membershipStatus == self::INACTIVE_MEMBERSHIP && $mcType != 'MX') {
@@ -247,7 +247,8 @@ class CRM_Convertmcs_Convertor {
   }
 
   private function getContactURL($contactId) {
-    return '<a href="contact/view?reset=1&cid=' . $contactId . '">' . $contactId . '</a>';
+    $contactName = CRM_Core_DAO::singleValueQuery("select display_name from civicrm_contact where id = $contactId");
+    return '<a href="contact/view?reset=1&cid=' . $contactId . '">' . $contactName . '</a>';
   }
 
 }
