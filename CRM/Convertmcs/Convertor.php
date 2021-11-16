@@ -134,22 +134,14 @@ class CRM_Convertmcs_Convertor {
 
   private function convertContact($contactId, $mcType) {
     try {
-      if ($mcType == 'MX') {
-        $employerId = $this->getExEmployerId($contactId);
-      }
-      else {
-        $employerId = $this->getEmployerId($contactId);
-      }
-
+      $employerId = $this->getEmployerId($contactId, $mcType);
       $membershipStatus = $this->getMembershipStatus($employerId);
 
       $this->assertMembershipStatus($contactId, $employerId, $membershipStatus, $mcType);
 
-      // VOOR MX: relaties werkgever checken
+      $this->addRelationship($contactId, $employerId, $mcType);
 
       $this->numConvertedContacts++;
-      // AFWERKEN
-
     }
     catch (Exception $e) {
       $this->issues[] = $e->getMessage();
@@ -180,7 +172,52 @@ class CRM_Convertmcs_Convertor {
     }
   }
 
-  private function getEmployerId($contactId) {
+  private function getEmployerId($contactId, $mcType) {
+    if ($this->isIndividualMember($contactId)) {
+      return $this->getDummyEmployerId();
+    }
+
+    if ($mcType == 'MX') {
+      return $this->getExEmployerId($contactId);
+    }
+
+    return $this->getCurrentEmployerId($contactId);
+  }
+
+  private function isIndividualMember($contactId) {
+    $sql = "select * from civicrm_membership where contact_id = $contactId and membership_type_id = 8 order by end_date desc";
+    $dao = CRM_Core_DAO::executeQuery($sql);
+    if ($dao->fetch()) {
+      // check if the end date is in the future or the status = new, current, grace
+      if ($dao->end_date >= date('Y-m-d') || $dao->status_id == 1 || $dao->status_id == 2 || $dao->status_id == 3) {
+        return TRUE;
+      }
+      else {
+        return FALSE;
+      }
+    }
+    else {
+      return FALSE;
+    }
+  }
+
+  private function getDummyEmployerId() {
+    $sql = "
+      select
+        id
+      from
+        civicrm_contact
+      where
+        display_name = '*'
+      and
+        is_deleted = 0
+      and
+        contact_type = 'Organization'
+    ";
+    return CRM_Core_DAO::singleValueQuery($sql);
+  }
+
+  private function getCurrentEmployerId($contactId) {
     return CRM_Core_DAO::singleValueQuery("
       select employer_id from civicrm_contact where id = $contactId
     ");
@@ -234,6 +271,28 @@ class CRM_Convertmcs_Convertor {
     }
 
     return $status;
+  }
+
+  private function addRelationship($contactId, $employerId, $mcType) {
+    $params = [
+      'contact_id_a' => $contactId,
+      'contact_id_b' => $employerId,
+    ];
+
+    if ($mcType == 'M1') {
+      $params['is_active'] = 1;
+      $params['relationship_type_id'] = $this->relTypePrimaryMemberContactId;
+    }
+    elseif ($mcType == 'MC') {
+      $params['is_active'] = 1;
+      $params['relationship_type_id'] = $this->relTypeMemberContactId;
+    }
+    elseif ($mcType == 'MX') {
+      $params['is_active'] = 0;
+      $params['relationship_type_id'] = $this->relTypeMemberContactId;
+    }
+
+    civicrm_api3('Relationship', 'Create', $params);
   }
 
   private function convertIssuesToLi() {

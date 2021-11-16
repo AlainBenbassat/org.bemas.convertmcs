@@ -2,7 +2,7 @@
 use CRM_Convertmcs_ExtensionUtil as E;
 
 class CRM_Convertmcs_Page_ConvertMCS extends CRM_Core_Page {
-  const DEFAULT_BATCH_LIMIT = 500;
+  const DEFAULT_BATCH_LIMIT = 120;
 
   public function run() {
     CRM_Utils_System::setTitle('Convert (Primary) Member Contacts');
@@ -30,7 +30,10 @@ class CRM_Convertmcs_Page_ConvertMCS extends CRM_Core_Page {
   }
 
   private function getBatchLimit() {
-    return CRM_Utils_Request::retrieveValue('limit', 'Integer', self::DEFAULT_BATCH_LIMIT);
+    //$limit = CRM_Utils_Request::retrieveValue('batch_limit', 'Integer', self::DEFAULT_BATCH_LIMIT, FALSE, 'GET');
+    // WERKT NIET!?!
+
+    return self::DEFAULT_BATCH_LIMIT;
   }
 
   private function getAction() {
