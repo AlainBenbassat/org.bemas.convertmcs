@@ -25,8 +25,12 @@ class CRM_Convertmcs_Inspector {
         count(*)
       from
         civicrm_value_individual_details_19 i
+      inner join
+        civicrm_contact c on c.id = i.entity_id
       where
         i.types_of_member_contact_60 = 'M1 - Primary member contact'
+      and
+        c.is_deleted = 0
       and
         not exists (
           select
@@ -50,8 +54,12 @@ class CRM_Convertmcs_Inspector {
         count(*)
       from
         civicrm_value_individual_details_19 i
+      inner join
+        civicrm_contact c on c.id = i.entity_id
       where
         i.types_of_member_contact_60 = 'Mc - Member contact'
+      and
+        c.is_deleted = 0
       and
         not exists (
           select
@@ -75,8 +83,12 @@ class CRM_Convertmcs_Inspector {
         count(*)
       from
         civicrm_value_individual_details_19 i
+      inner join
+        civicrm_contact c on c.id = i.entity_id
       where
         i.types_of_member_contact_60 = 'Mx - Ex-member contact'
+      and
+        c.is_deleted = 0
       and
         not exists (
           select
