@@ -159,13 +159,13 @@ class CRM_Convertmcs_Convertor {
       throw new Exception("Contact $contactURL ($mcType) heeft geen (ex)werkgever met een lidmaatschap");
     }
 
-    if ($membershipStatus == self::NO_MEMBERSHIP) {
+    if ($mcType != 'MX' && $membershipStatus == self::NO_MEMBERSHIP) {
       $contactURL = $this->getContactURL($contactId);
       $employerURL = $this->getContactURL($employerId);
       throw new Exception("Contact $contactURL ($mcType) met werkgever $employerURL heeft geen lidmaatschap");
     }
 
-    if ($membershipStatus == self::INACTIVE_MEMBERSHIP && $mcType != 'MX') {
+    if ($mcType != 'MX' && $membershipStatus == self::INACTIVE_MEMBERSHIP) {
       $contactURL = $this->getContactURL($contactId);
       $employerURL = $this->getContactURL($employerId);
       throw new Exception("Contact $contactURL met werkgever $employerURL is $mcType, maar het lidmaatschap is inactief");
@@ -174,7 +174,7 @@ class CRM_Convertmcs_Convertor {
 
   private function getEmployerId($contactId, $mcType) {
     if ($this->isIndividualMember($contactId)) {
-      return $this->getDummyEmployerId();
+      return $this->getContactIdOrgAsterisk();
     }
 
     if ($mcType == 'MX') {
@@ -201,14 +201,14 @@ class CRM_Convertmcs_Convertor {
     }
   }
 
-  private function getDummyEmployerId() {
+  private function getContactIdOrgAsterisk() {
     $sql = "
       select
         id
       from
         civicrm_contact
       where
-        display_name = '*'
+        nick_name = '*'
       and
         is_deleted = 0
       and
@@ -249,7 +249,8 @@ class CRM_Convertmcs_Convertor {
       return $dao->contact_id_b;
     }
     else {
-      return 0;
+      // no org. id found, return id of org *
+      return $this->getContactIdOrgAsterisk();
     }
   }
 
