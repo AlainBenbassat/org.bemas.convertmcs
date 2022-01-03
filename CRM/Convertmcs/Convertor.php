@@ -10,9 +10,13 @@ class CRM_Convertmcs_Convertor {
   private $issues = [];
   private $numConvertedContacts = 0;
 
+  private $contactIdOrgAsterisk = 0;
+
   public function __construct() {
     $this->relTypePrimaryMemberContactId = CRM_Convertmcs_Relationship::getRelationshipTypePrimaryMemberContact()['id'];
     $this->relTypeMemberContactId = CRM_Convertmcs_Relationship::getRelationshipTypeMemberContact()['id'];
+
+    $this->contactIdOrgAsterisk = $this->getContactIdOrgAsterisk();
   }
 
   public function start($batchLimit) {
@@ -174,7 +178,7 @@ class CRM_Convertmcs_Convertor {
 
   private function getEmployerId($contactId, $mcType) {
     if ($this->isIndividualMember($contactId)) {
-      return $this->getContactIdOrgAsterisk();
+      return $this->contactIdOrgAsterisk;
     }
 
     if ($mcType == 'MX') {
@@ -250,7 +254,7 @@ class CRM_Convertmcs_Convertor {
     }
     else {
       // no org. id found, return id of org *
-      return $this->getContactIdOrgAsterisk();
+      return $this->contactIdOrgAsterisk;
     }
   }
 
