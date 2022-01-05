@@ -6,4 +6,10 @@
     <title>ConvertMCS</title>
     <access_arguments>access CiviCRM</access_arguments>
   </item>
+  <item>
+    <path>civicrm/convert-md</path>
+    <page_callback>CRM_Convertmcs_Page_ConvertMd</page_callback>
+    <title>ConvertMd</title>
+    <access_arguments>access CiviCRM</access_arguments>
+  </item>
 </menu>
