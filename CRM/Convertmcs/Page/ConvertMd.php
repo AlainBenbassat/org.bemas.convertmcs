@@ -21,7 +21,7 @@ class CRM_Convertmcs_Page_ConvertMd extends CRM_Core_Page {
   }
 
   private function updateField($entityId, $customField, $customValue) {
-    if (!empty($customValue)) {
+    if ($customValue === 0 || !empty($customValue)) {
       civicrm_api3('CustomValue', 'Create', [
         'entity_id' => $entityId,
         $customField => $customValue,
