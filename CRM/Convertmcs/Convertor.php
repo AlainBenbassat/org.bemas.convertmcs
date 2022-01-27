@@ -33,6 +33,69 @@ class CRM_Convertmcs_Convertor {
     return $output;
   }
 
+  public function countRelsWithoutStartDate() {
+    $sql = "
+      select
+        count(*)
+      from
+        civicrm_relationship
+      where
+        relationship_type_id in ({$this->relTypePrimaryMemberContactId}, {$this->relTypeMemberContactId})
+      and
+        start_date is null
+    ";
+    return CRM_Core_DAO::singleValueQuery($sql);
+  }
+
+  public function fillRelDate() {
+    $dao = $this->getRelsWithoutDate();
+    while ($dao->fetch()) {
+      $startDateMembership = $this->getMembershipStartDate($dao->org_id);
+      $this->updateRelationshipStartDate($dao->rel_id, $startDateMembership);
+    }
+  }
+
+  private function getRelsWithoutDate() {
+    $sql = "
+      select
+        id rel_id
+        , contact_id_b org_id
+      from
+        civicrm_relationship
+      where
+        relationship_type_id in ({$this->relTypePrimaryMemberContactId}, {$this->relTypeMemberContactId})
+      and
+        start_date is null
+    ";
+    return CRM_Core_DAO::executeQuery($sql);
+  }
+
+  private function getMembershipStartDate($contactId) {
+    $sql = "
+      select
+        max(start_date)
+      from
+        civicrm_membership
+      where
+        contact_id = $contactId
+    ";
+    return CRM_Core_DAO::singleValueQuery($sql);
+  }
+
+  function updateRelationshipStartDate($relId, $startDateMembership) {
+    if (!$startDateMembership) {
+      return;
+    }
+
+    $sql = "update civicrm_relationship set start_date = %1 where id = %2";
+    $sqlParams = [
+      1 => [$startDateMembership, 'String'],
+      2 => [$relId, 'Integer'],
+    ];
+
+    CRM_Core_DAO::executeQuery($sql, $sqlParams);
+  }
+
   private function convertPrimaryMemberContacts($batchLimit) {
     $sql = "
       select

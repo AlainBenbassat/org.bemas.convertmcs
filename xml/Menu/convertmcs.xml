@@ -12,4 +12,10 @@
     <title>ConvertMd</title>
     <access_arguments>access CiviCRM</access_arguments>
   </item>
+  <item>
+    <path>civicrm/convertmcs-reldate</path>
+    <page_callback>CRM_Convertmcs_Form_FillRelDate</page_callback>
+    <title>FillRelDate</title>
+    <access_arguments>access CiviCRM</access_arguments>
+  </item>
 </menu>
